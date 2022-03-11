@@ -1,0 +1,21 @@
+function [data]=readtiff(filename)
+
+try
+info = imfinfo(filename);
+catch
+    disp(['Empty TIFF file for: ', filename, '....Moving on...'])
+return
+end
+
+numI = numel(info);
+data=zeros(info(1).Width,info(1).Height,numI,'uint16');
+fid=fopen(filename);
+fseek(fid,info(1).Offset,'bof'); % the 8 is info(1).Offset
+for k = 1:numI
+    fseek(fid,[info(1,1).StripOffsets(1)-info(1,1).Offset],'cof');    % the 422 is info(1).StripOffset-info(1).Offset
+    tempdata=fread(fid,info(1).Height*info(1).Width,'uint16');   
+    data(:,:,k) = rot90((reshape(tempdata,info(1).Height,info(1).Width)),-1);
+end
+fclose(fid);
+
+end
